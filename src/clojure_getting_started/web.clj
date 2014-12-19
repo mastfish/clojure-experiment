@@ -13,19 +13,26 @@
    :headers {"Content-Type" "text/plain"}
    :body (pr-str ["Hello" :from 'Heroku])})
 
-(defn personalize [input]
+(def user-to-category
+    {
+      "bob"  "mens-fashion-accessories"
+      "jane" "womens-fashion-accessories"
+    }
+  )
+
+(defn personalize [input user]
   (let [resp1 (http/get "http://http-kit.org/")
       resp2 (http/get "http://clojure.org/")]
     (println "Response 1's status: " (:status @resp1)) ; wait as necessary
     (println "Response 2's status: " (:status @resp2)))
-    (identity input)
+    (concat input " " (user-to-category user))
   )
 
 (defroutes app
-  (GET "/search" {{input :input} :params}
+  (GET "/search" {{input :input user :user} :params}
     {:status 200
      :headers {"Content-Type" "text/plain"}
-     :body (personalize input)}
+     :body (personalize input user)}
        )
   (GET "/" []
        (splash))

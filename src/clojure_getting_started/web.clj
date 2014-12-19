@@ -20,19 +20,28 @@
     }
   )
 
-(defn personalize [input user]
-  (let [resp1 (http/get "http://http-kit.org/")
-      resp2 (http/get "http://clojure.org/")]
+(def base_url
+  "http://search-service-production.herokuapp.com/search.json?types[]=products"
+  )
+
+(defn search_url
+  ([] base_url)
+  ([code] (concat (search_url) "&category_hierarchy.code=" code))
+  )
+
+(defn personalize [user]
+  (let [resp1 (http/get (search_url (user-to-category user)))
+      resp2 (http/get (search_url))]
     (println "Response 1's status: " (:status @resp1)) ; wait as necessary
     (println "Response 2's status: " (:status @resp2)))
-    (concat input " " (user-to-category user))
+    (concat "blah")
   )
 
 (defroutes app
-  (GET "/search" {{input :input user :user} :params}
+  (GET "/search" {{user :user} :params}
     {:status 200
      :headers {"Content-Type" "text/plain"}
-     :body (personalize input user)}
+     :body (personalize user)}
        )
   (GET "/" []
        (splash))
@@ -42,6 +51,9 @@
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]
     (jetty/run-jetty (site #'app) {:port port :join? false})))
+
+(use 'ring.server.standalone)
+  (serve (site #'app))
 
 ;; For interactive development:
 ;; (.stop server)

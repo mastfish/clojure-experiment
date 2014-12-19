@@ -4,7 +4,9 @@
             [compojure.route :as route]
             [clojure.java.io :as io]
             [ring.adapter.jetty :as jetty]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [org.httpkit.client :as http]
+            ))
 
 (defn splash []
   {:status 200
@@ -12,7 +14,11 @@
    :body (pr-str ["Hello" :from 'Heroku])})
 
 (defn personalize [input]
-  (identity input)
+  (let [resp1 (http/get "http://http-kit.org/")
+      resp2 (http/get "http://clojure.org/")]
+    (println "Response 1's status: " (:status @resp1)) ; wait as necessary
+    (println "Response 2's status: " (:status @resp2)))
+    (identity input)
   )
 
 (defroutes app
